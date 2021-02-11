@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
@@ -14,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import br.com.alura.todo.databinding.TasksListBinding
 import br.com.alura.todo.model.Task
 import br.com.alura.todo.ui.recyclerview.adapter.TasksListAdapter
+import br.com.alura.todo.viewmodel.AppStateViewModel
 import br.com.alura.todo.viewmodel.TaskListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -25,6 +27,7 @@ class TasksListFragment : Fragment() {
     private var _binding: TasksListBinding? = null
     private val binding: TasksListBinding get() = _binding!!
     private val viewModel: TaskListViewModel by viewModels()
+    private val sharedViewModel by activityViewModels<AppStateViewModel>()
     private val navController by lazy {
         findNavController()
     }
@@ -62,6 +65,14 @@ class TasksListFragment : Fragment() {
                 .actionTasksListToTaskForm()
                 .let(navController::navigate)
         }
+
+        lifecycleScope.launch {
+            sharedViewModel.components.appBar.collect { hasAppBar ->
+                Log.i("TasksListFragment", "onViewCreated: $hasAppBar")
+            }
+        }
+
+        sharedViewModel.components.appBar.value = true
     }
 
     override fun onDestroyView() {
